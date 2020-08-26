@@ -10,9 +10,9 @@ import { getSortedPostsData } from '../lib/posts';
 import { client } from '../contentful';
 
 const Home = ({ allPostsData, people, foods }) => {
-  console.log('allPostsData', allPostsData);
-  console.log('people', people);
-  console.log('foods', foods);
+  // console.log('allPostsData', allPostsData);
+  // console.log('people', people);
+  // console.log('foods', foods);
 
   return (
     <Layout home>
@@ -28,12 +28,11 @@ const Home = ({ allPostsData, people, foods }) => {
             <a href="https://nextjs.org/learn">our Next.js tutorial</a>
             .)
           </p>
-          <Link href="/posts/first-post">
-            <a>First Post</a>
-          </Link>
         </section>
         <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
-          <h2 className={utilStyles.headingLg}>Blog</h2>
+          <h2 className={utilStyles.headingLg}>
+            Dados do Markdown no file system
+          </h2>
           <ul className={utilStyles.list}>
             {allPostsData.map(({ id, date, title }) => (
               <li className={utilStyles.listItem} key={id}>
@@ -45,6 +44,22 @@ const Home = ({ allPostsData, people, foods }) => {
                   <Date dateString={date} />
                 </small>
               </li>
+            ))}
+          </ul>
+
+          <h2 className={utilStyles.headingLg}>Dados do contentful</h2>
+          <ul>
+            {foods.map(food => (
+              <li key={food.title}>
+                <img src={food.image} alt={food.title} />
+              </li>
+            ))}
+          </ul>
+
+          <h2 className={utilStyles.headingLg}>Dados da api randomuser.me</h2>
+          <ul>
+            {people.map(p => (
+              <li key={p.name}>{p.name}</li>
             ))}
           </ul>
         </section>
@@ -60,17 +75,33 @@ const Home = ({ allPostsData, people, foods }) => {
 // https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation
 export const getStaticProps = async () => {
   const allPostsData = getSortedPostsData();
+
   const peopleResponse = await axios.get(
-    'https://randomuser.me/api/?gender=male',
+    'https://randomuser.me/api/?results=5&gender=male',
   );
 
-  const recipesResponse = await client.getEntries({ content_type: 'recipes' });
+  const people = peopleResponse.data.results.map(p => ({
+    name: `${p.name.first} ${p.name.last}`,
+  }));
+
+  const recipesResponse = await client.getEntries({
+    content_type: 'recipes',
+  });
+
+  const foods = recipesResponse.items.map(food => {
+    const { featuredImage } = food.fields;
+
+    return {
+      title: featuredImage.fields.title,
+      image: featuredImage.fields.file.url,
+    };
+  });
 
   return {
     props: {
       allPostsData,
-      people: peopleResponse.data.results,
-      foods: recipesResponse.items,
+      people,
+      foods,
     },
   };
 };
@@ -82,15 +113,29 @@ export const getStaticProps = async () => {
 // https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering
 const getServerSideProps = async () => {
   const peopleResponse = await axios.get(
-    'https://randomuser.me/api/?gender=male',
+    'https://randomuser.me/api/?results=5&gender=male',
   );
-  const recipesResponse = await client.getEntries({ content_type: 'recipes' });
+
+  const people = peopleResponse.data.results.map(p => ({
+    name: `${p.name.first} ${p.name.last}`,
+  }));
+
+  const recipesResponse = await client.getEntries({
+    content_type: 'recipes',
+  });
+
+  const foods = recipesResponse.items.map(food => {
+    return {
+      title: food.fields.featuredImage.fields.title,
+      image: food.fields.featuredImage.fields.file.url,
+    };
+  });
 
   return {
     props: {
       allPostsData: [],
-      people: peopleResponse.data.results,
-      foods: recipesResponse.items,
+      people,
+      foods,
     },
   };
 };
@@ -111,20 +156,13 @@ Home.propTypes = {
   ),
   people: PropTypes.arrayOf(
     PropTypes.shape({
-      name: {
-        first: PropTypes.string,
-        last: PropTypes.string,
-      },
+      name: PropTypes.string,
     }),
   ),
   foods: PropTypes.arrayOf(
     PropTypes.shape({
-      fields: {
-        name: PropTypes.string,
-        description: PropTypes.string,
-        type: PropTypes.string,
-        featuredImage: PropTypes.string,
-      },
+      title: PropTypes.string,
+      image: PropTypes.string,
     }),
   ),
 };
