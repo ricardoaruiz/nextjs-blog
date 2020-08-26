@@ -6,7 +6,7 @@ import axios from 'axios';
 import Layout, { siteTitle } from '../components/Layout';
 import Date from '../components/Date';
 import utilStyles from '../styles/util.module.scss';
-// import { getSortedPostsData } from '../lib/posts';
+import { getSortedPostsData } from '../lib/posts';
 import { client } from '../contentful';
 
 const Home = ({ allPostsData, people, foods }) => {
@@ -73,45 +73,45 @@ const Home = ({ allPostsData, people, foods }) => {
 // "getStaticProps" é utilizado para renderização estática ou seja em tempo de build
 
 // https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation
-// const getStaticProps = async () => {
-//   const allPostsData = getSortedPostsData();
+export const getStaticProps = async () => {
+  const allPostsData = getSortedPostsData();
 
-//   const peopleResponse = await axios.get(
-//     'https://randomuser.me/api/?results=5&gender=male',
-//   );
+  const peopleResponse = await axios.get(
+    'https://randomuser.me/api/?results=5&gender=male',
+  );
 
-//   const people = peopleResponse.data.results.map(p => ({
-//     name: `${p.name.first} ${p.name.last}`,
-//   }));
+  const people = peopleResponse.data.results.map(p => ({
+    name: `${p.name.first} ${p.name.last}`,
+  }));
 
-//   const recipesResponse = await client.getEntries({
-//     content_type: 'recipes',
-//   });
+  const recipesResponse = await client.getEntries({
+    content_type: 'recipes',
+  });
 
-//   const foods = recipesResponse.items.map(food => {
-//     const { featuredImage } = food.fields;
+  const foods = recipesResponse.items.map(food => {
+    const { featuredImage } = food.fields;
 
-//     return {
-//       title: featuredImage.fields.title,
-//       image: featuredImage.fields.file.url,
-//     };
-//   });
+    return {
+      title: featuredImage.fields.title,
+      image: featuredImage.fields.file.url,
+    };
+  });
 
-//   return {
-//     props: {
-//       allPostsData,
-//       people,
-//       foods,
-//     },
-//   };
-// };
+  return {
+    props: {
+      allPostsData,
+      people,
+      foods,
+    },
+  };
+};
 
 // Em prod é executado somente em tempo de build
 // Em dev é executado sempre que a página é carregada
 // "getServerSideProps" é utilizado para renderização server side a cada requisição.
 
 // https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering
-export const getServerSideProps = async () => {
+const getServerSideProps = async () => {
   const peopleResponse = await axios.get(
     'https://randomuser.me/api/?results=5&gender=male',
   );
