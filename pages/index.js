@@ -10,9 +10,9 @@ import { getSortedPostsData } from '../lib/posts';
 import { client } from '../contentful';
 
 const Home = ({ allPostsData, people, foods }) => {
-  // console.log('allPostsData', allPostsData);
-  // console.log('people', people);
-  // console.log('foods', foods);
+  console.log('allPostsData', allPostsData);
+  console.log('people', people);
+  console.log('foods', foods);
 
   return (
     <Layout home>
